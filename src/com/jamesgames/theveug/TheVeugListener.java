@@ -15,6 +15,9 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 
+import com.jamesgames.theveug.Config.ConfigData;
+import com.jamesgames.theveug.Config.ImportedData;
+
 public class TheVeugListener implements Listener
 {
 
@@ -54,7 +57,8 @@ public class TheVeugListener implements Listener
 			level = item.getLevel();
 		}
 		
-		HashMap<Material, String> itemDrops = plugin.Config.getItemDropChance();
+		ImportedData data = plugin.Config.GetDataForMaterial(itemInHand.getType());
+		HashMap<Material, String> itemDrops = data.ItemDrops;
 		for (Material material : itemDrops.keySet())
 		{
 			String equation = itemDrops.get(material);
@@ -78,7 +82,7 @@ public class TheVeugListener implements Listener
 
 	private void AwardXP(BlockBreakEvent event)
 	{
-		long rewardedXP = plugin.Config.GetXPFromMaterial(event.getBlock().getType());
+		long rewardedXP = plugin.Config.GetDataForMaterial(event.getBlock().getType()).XPReward;
 		if(rewardedXP <= 0L) 
 		{
 
@@ -113,7 +117,7 @@ public class TheVeugListener implements Listener
 		{
 			xp -= maxXP;
 			level += 1;
-			maxXP = plugin.Config.getExperienceForLevel(level);
+			maxXP = plugin.Config.getMaxXPForLevel(itemInHand.getType(), level);
 		}
 
 		plugin.getLogger().info(String.format("Item State: Levle: {0} XP: {1}/{2}", level, xp, maxXP));

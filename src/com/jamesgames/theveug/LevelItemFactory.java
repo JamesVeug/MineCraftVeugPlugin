@@ -33,7 +33,7 @@ public class LevelItemFactory
 	public LevelItem Create(ItemStack item, long id)
 	{
 		LevelItem levelItem = new LevelItem(item, id);
-		long maxXP = plugin.Config.getExperienceForLevel(levelItem.getLevel());
+		long maxXP = plugin.Config.getMaxXPForLevel(item.getType(), levelItem.getLevel());
 		int damage = plugin.Config.getDamageForLevel(levelItem.getItem().getType(), levelItem.getLevel(), levelItem.getDamage(), levelItem.getDefaultDamage());
 		levelItem.setExperience(0, maxXP, levelItem.getLevel(), damage);
 		

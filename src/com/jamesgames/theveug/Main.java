@@ -6,15 +6,17 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.jamesgames.theveug.Config.ConfigHandler;
+
 public class Main extends JavaPlugin
 {
-	public Config Config;
+	public ConfigHandler Config;
 
 	@Override
 	public void onEnable()
 	{
 		getLogger().info("TheVeug onEnable has been invoked!");
-		Config = new Config(this);
+		Config = new ConfigHandler(this);
 		new LevelItemFactory(this);
 
 		PluginManager pm = getServer().getPluginManager();
