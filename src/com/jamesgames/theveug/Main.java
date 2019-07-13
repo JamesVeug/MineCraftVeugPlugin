@@ -3,6 +3,7 @@ package com.jamesgames.theveug;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -30,19 +31,44 @@ public class Main extends JavaPlugin
 		getLogger().info("TheVeug onDisable has been invoked!");
 	}
 	
-	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
 	{
-		if (args[0].equalsIgnoreCase("reloadconfig"))
+		switch (command.getName())
 		{
-			if(Config.loadConfig()) {
-				sender.sendMessage(ChatColor.GREEN + "Config reloaded successfully!." + ChatColor.RESET);
+			case "reload_config":
+			{
+				if (Config.loadConfig())
+				{
+					sender.sendMessage(ChatColor.GREEN + "Config reloaded successfully!." + ChatColor.RESET);
+				}
+				else
+				{
+					sender.sendMessage(ChatColor.GREEN + "Config failed to reloaded..." + ChatColor.RESET);
+				}
+				return true;
 			}
-			else {
-				sender.sendMessage(ChatColor.GREEN + "Config failed to reloaded..." + ChatColor.RESET);
+			case "xp_rate":
+			{
+				float rate = Float.parseFloat(args[0]);
+				Config.setXPRate(rate);
+				this.getLogger().info("XP Rate now set to: " + rate);
+				
+				return true;
+			}
+			case "drop_rate":
+			{
+				float rate = Float.parseFloat(args[0]);
+				Config.setDropRate(rate);
+				this.getLogger().info("Drop Rate now set to: " + rate);
+				
+				return true;
+			}
+			default:
+			{
+				sender.sendMessage("Unknown command '" + command.getName() + "'");
 			}
 		}
-		
-		return true;
+
+		return false;
 	}
 }

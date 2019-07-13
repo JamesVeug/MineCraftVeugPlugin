@@ -3,3 +3,12 @@ main: com.jamesgames.theveug.Main
 version: 1.0
 api-version: 1.14
 commands:
+    reload_config:
+        description: Reloads all data from the json
+        usage: /<command>
+    xp_rate:
+        description: Sets global xp rate from all destroyed blocks
+        usage: /<command> amount
+    drop_rate:
+        description: Sets global drop rate of all items dropped from blocks
+        usage: /<command> amount

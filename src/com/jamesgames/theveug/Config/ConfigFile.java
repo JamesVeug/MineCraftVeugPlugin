@@ -6,9 +6,9 @@ import org.bukkit.Material;
 
 public class ConfigFile
 {
-	public float XPRate;
-	public float DropRate;
-	public HashMap<String, ConfigData> MaterialData;
+	public double XPRate;
+	public double DropRate;
+	public HashMap<String, ConfigData> MaterialData = new HashMap<String, ConfigData>();
 	
 	public void AddMaterialData(Material material) {
 		

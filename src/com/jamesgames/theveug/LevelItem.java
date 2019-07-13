@@ -1,15 +1,10 @@
 package com.jamesgames.theveug;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class LevelItem
@@ -19,9 +14,6 @@ public class LevelItem
 	private int level;
 	private long xp;
 	private long maxXP;
-	private int defaultDamage;
-	private int newDamage;
-	Player holder;
 
 	public LevelItem(ItemStack item, long id)
 	{
@@ -30,26 +22,19 @@ public class LevelItem
 		this.level = 1;
 		this.xp = 0;
 		this.maxXP = 0;
-		this.defaultDamage = getDamage();
-        newDamage = defaultDamage;
-        
-		refresh();
 	}
 
-	private void refresh()
+	public void refresh()
 	{
 		ItemMeta meta = item.getItemMeta();
 		List<String> lore = meta.hasLore() ? meta.getLore() : new ArrayList(3);
 		lore.clear();
-		lore.add(ChatColor.AQUA + "Level: " + level);
-		lore.add(ChatColor.AQUA + "XP: " + xp + "/" + maxXP);
-		lore.add(ChatColor.RESET + "#ID" + id);
+		lore.add(ChatColor.AQUA + "Level: " + this.level);
+		lore.add(ChatColor.AQUA + "XP: " + this.xp + "/" + this.maxXP);
+		lore.add(ChatColor.RESET + "#ID" + this.id);
 		meta.setLore(lore);
-		
-		if (meta instanceof Damageable){
-			((Damageable) meta).setDamage(newDamage);
-        }
 		item.setItemMeta(meta);
+		System.out.print("ID: " + id + " refreshed to have " + this.xp + " xp");
 	}
 
 	public ItemStack getItem()
@@ -72,13 +57,28 @@ public class LevelItem
 		return maxXP;
 	}
 
-	public void setExperience(long xp, long maxXP, int level, int damage)
+	public void updateLore(long xp, long maxXP, int level)
 	{
 		this.xp = xp;
 		this.maxXP = maxXP;
 		this.level = level;
-		this.newDamage = damage;
 		refresh();
+	}
+	
+	public void useLore(List<String> lore) 
+	{
+		// Update from lore
+		this.level = Integer.parseInt(ChatColor.stripColor((String) lore.get(0)).substring(7));
+		this.id = Integer.parseInt(ChatColor.stripColor((String) lore.get(2)).substring(3));
+		
+		String xpString = ChatColor.stripColor((String) lore.get(1)).substring(4);
+		int length = xpString.indexOf("/");
+		this.xp = Long.parseLong(xpString.substring(0, length));
+		this.maxXP = Long.parseLong(xpString.substring(length + 1));
+		
+		// Update lore
+		refresh();
+		System.out.print("ID: " + id + " using " + this.xp + " xp");
 	}
 
 	public int getLevel()
@@ -86,23 +86,8 @@ public class LevelItem
 		return level;
 	}
 
-	public void addLevel()
+	public void setId(long id)
 	{
-		level++;
-	}
-
-	public int getDefaultDamage()
-	{
-		return defaultDamage;
-	}
-
-	public int getDamage()
-	{
-		ItemMeta itemMeta = item.getItemMeta();
-        if (itemMeta instanceof Damageable){
-    		return item.hasItemMeta() ? ((Damageable) item.getItemMeta()).getDamage() : 0;
-        }
-        
-        return 0;
+		this.id = id;
 	}
 }

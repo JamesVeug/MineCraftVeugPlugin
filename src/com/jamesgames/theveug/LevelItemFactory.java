@@ -5,8 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import com.jamesgames.theveug.util.Util;
 
 public class LevelItemFactory
 {
@@ -24,68 +27,46 @@ public class LevelItemFactory
 		this.plugin = plugin;
 	}
 
-	public LevelItem Create(ItemStack item)
+	public LevelItem get(ItemStack item)
 	{
-		long id = largest++;
-		return Create(item, id);
-	}
+		long id = Util.getId(item);
+		if (levelItemIdMap.containsKey(id))
+		{
+			// This item has already been created
+			return levelItemIdMap.get(id);
+		}		
 
-	public LevelItem Create(ItemStack item, long id)
-	{
+		id = getNextId();
 		LevelItem levelItem = new LevelItem(item, id);
-		long maxXP = plugin.Config.getMaxXPForLevel(item.getType(), levelItem.getLevel());
-		int damage = plugin.Config.getDamageForLevel(levelItem.getItem().getType(), levelItem.getLevel(), levelItem.getDamage(), levelItem.getDefaultDamage());
-		levelItem.setExperience(0, maxXP, levelItem.getLevel(), damage);
+		ItemMeta meta = item.getItemMeta();
+		List<String> lore = meta.hasLore() ? meta.getLore() : null;
+		if (lore == null)
+		{
+			// This item has never existed so create the lore for it
+			int level = 1;
+			long XP = 0;
+			long maxXP = plugin.Config.getMaxXPForLevel(levelItem.getItem().getType(), level);
+			levelItem.updateLore(XP, maxXP, level);
+		}
+		else
+		{
+			// Use existing lore
+			// NOTE: Check ID from lore does not already exist
+			levelItem.useLore(lore);
+			if (levelItemIdMap.containsKey(levelItem.getId())) {
+				levelItem.setId(getNextId());
+			}
+		}
 		
 		levelItemIdMap.put(id, levelItem);
 		return levelItem;
 	}
-
-	public LevelItem getLevelItem(ItemStack item)
-	{
-		long id = getId(item);
-		if (id < 0L)
-			return Create(item);
-
-		LevelItem levelItem = getLevelItem(id);
-		if (levelItem == null)
-			levelItem = Create(item, id);
-
-		return levelItem;
-	}
-
-	private LevelItem getLevelItem(long id)
-	{
-		return (LevelItem) levelItemIdMap.get(Long.valueOf(id));
-	}
-
-	public long getId(ItemStack item)
-	{
-		if (item != null && item.hasItemMeta())
-		{
-			try
-			{
-				ItemMeta meta = item.getItemMeta();
-				List<String> lore = meta.hasLore() ? meta.getLore() : new ArrayList(0);
-				int i = get(lore) + 1;
-				return Long.parseLong(ChatColor.stripColor((String) lore.get(i)).substring(3));
-			} catch (IndexOutOfBoundsException | NumberFormatException localIndexOutOfBoundsException)
-			{
-			}
+	
+	private long getNextId() {
+		long id = largest++;
+		while (levelItemIdMap.containsKey(id)) {
+			id = largest++;
 		}
-
-		return -1L;
-	}
-
-	private int get(List<String> lore)
-	{
-		for (int i = 0; i < lore.size(); i++)
-		{
-			if (ChatColor.stripColor((String) lore.get(i)).startsWith("XP: "))
-			{
-				return i;
-			}
-		}
-		return lore.size() - 1;
+		return id;
 	}
 }

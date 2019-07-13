@@ -32,8 +32,8 @@ public class ConfigHandler
 	private final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("JavaScript");
 	private HashMap<Material, ImportedData> materialData = new HashMap<Material, ImportedData>();
 
-	private float xpRate;
-	private float dropRate;
+	private double xpRate;
+	private double dropRate;
 	private Main plugin;
 
 	public ConfigHandler(Main plugin)
@@ -61,22 +61,30 @@ public class ConfigHandler
 	{
 		ImportedData data = GetDataForMaterial(material);
 		if (data == null) {
+
+			System.out.println("No data specified for Material: " + material.toString());
+			return 0L;
+		}
+		if (data.LevelXPEquation == null || data.LevelXPEquation.length() == 0) 
+		{
+			System.out.println("No LevelXPEquation specified for Material: " + material.toString());
 			return 0L;
 		}
 		
 		try
 		{
 			return solve(data.LevelXPEquation.replace("-LEVEL-", String.valueOf(level))).longValue();
-		} catch (ScriptException e)
+		} 
+		catch (ScriptException e)
 		{
-			plugin.getLogger().warning("An error occurred while attempting to solve config equation: \"" + getXpRate()
+			plugin.getLogger().warning("An error occurred while attempting to solve config equation: \"" + data.LevelXPEquation
 					+ "\". Using default value instead (100 xp)");
 			e.printStackTrace();
 		}
 		return 100L;
 	}
 
-	public int getDamageForLevel(Material type, int level, int damage, int defaultDamage)
+	/*public int getDamageForLevel(Material type, int level, int damage, int defaultDamage)
 	{
 		ImportedData data = GetDataForMaterial(type);
 		if (data == null) {
@@ -99,11 +107,11 @@ public class ConfigHandler
 			e.printStackTrace();
 		}
 		return defaultDamage;
-	}
+	}*/
 
 	public Number solve(String equation) throws ScriptException
 	{
-		return (Number) scriptEngine.eval(equation);
+		return (Number)scriptEngine.eval(equation);
 	}
 
 	public boolean loadConfig()
@@ -140,13 +148,23 @@ public class ConfigHandler
 		return true;
 	}
 
-	public float getXpRate()
+	public double getXpRate()
 	{
 		return xpRate;
 	}
 
-	public float getDropRate()
+	public double getDropRate()
 	{
 		return dropRate;
+	}
+
+	public void setXPRate(double rate)
+	{
+		xpRate = rate;
+	}
+
+	public void setDropRate(double rate)
+	{
+		dropRate = rate;
 	}
 }
