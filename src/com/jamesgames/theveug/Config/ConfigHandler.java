@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -31,6 +33,7 @@ public class ConfigHandler
 {
 	private final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("JavaScript");
 	private HashMap<Material, ImportedData> materialData = new HashMap<Material, ImportedData>();
+	private ArrayList<String> levelUpMessages = new ArrayList<String>();
 
 	private double xpRate;
 	private double dropRate;
@@ -116,7 +119,7 @@ public class ConfigHandler
 
 	public boolean loadConfig()
 	{
-		ConfigFile config = new ConfigLoader().getJsonConfig();
+		ConfigJSONFile config = new ConfigLoader().getJsonConfig();
 		if (config == null)
 		{
 			System.out.println("Config is null. Can not load config!");
@@ -130,6 +133,8 @@ public class ConfigHandler
 		System.out.println("XPRate: " + getXpRate());
 		System.out.println("DropRate: " + getDropRate());
 
+		// Level up messages
+		levelUpMessages = config.LevelPhrases;
 		
 		materialData.clear();
 		for (String materialString : config.MaterialData.keySet())
@@ -166,5 +171,10 @@ public class ConfigHandler
 	public void setDropRate(double rate)
 	{
 		dropRate = rate;
+	}
+	
+	public String RandomLevelUpMessage() 
+	{
+		return levelUpMessages.get(new Random().nextInt(levelUpMessages.size()));
 	}
 }

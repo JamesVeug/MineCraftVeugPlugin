@@ -164,8 +164,11 @@ public class TheVeugListener implements Listener
 		// Behavior when leveling
 		if(leveled) 
 		{
-			String message = "%s's %s is now level %d :D";
-			Bukkit.broadcastMessage(String.format(message, player.getDisplayName(), getMaterialName(itemInHand.getType()), level));
+			String message = plugin.Config.RandomLevelUpMessage();
+			message = message.replaceAll("-PLAYERNAME-", player.getDisplayName());
+			message = message.replaceAll("-ITEMNAME-", getMaterialName(itemInHand.getType()));
+			message = message.replaceAll("-LEVEL-", String.valueOf(level));
+			Bukkit.broadcastMessage(message);
 			itemInHand.setDurability((short) 0);
 		}
 		

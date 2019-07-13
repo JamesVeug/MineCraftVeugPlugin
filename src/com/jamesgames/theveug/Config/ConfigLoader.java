@@ -20,7 +20,7 @@ import com.jamesgames.theveug.Main;
 
 public class ConfigLoader
 {	
-	public ConfigFile getJsonConfig()
+	public ConfigJSONFile getJsonConfig()
 	{
 		String path = Bukkit.getWorldContainer().getAbsolutePath();
 		path = path.substring(0, path.length() - 1) + "/plugins/TheVeug/";
@@ -34,11 +34,11 @@ public class ConfigLoader
 			if (!jsonConfig.exists() && jsonConfig.createNewFile())
 			{
 				// Get a default map of blocks. You could just use a blank map, however.
-				ConfigFile defaultMap = getDefaults();
+				ConfigJSONFile defaultMap = getDefaults();
 
 				// Convert the map to JSON format. There is a built in (de)serializer for it
 				// already.
-				String json = gson.toJson(defaultMap, new TypeToken<ConfigFile>() {}.getType());
+				String json = gson.toJson(defaultMap, new TypeToken<ConfigJSONFile>() {}.getType());
 				FileWriter writer = new FileWriter(jsonConfig);
 				// Write to the file you passed
 				writer.write(json);
@@ -48,7 +48,7 @@ public class ConfigLoader
 
 			// If the file exists (or we just made one exist), convert it from JSON format
 			// to a populated Map object
-			return gson.fromJson(new FileReader(jsonConfig), new TypeToken<ConfigFile>() {
+			return gson.fromJson(new FileReader(jsonConfig), new TypeToken<ConfigJSONFile>() {
 			}.getType());
 		} catch (IOException e)
 		{
@@ -59,7 +59,7 @@ public class ConfigLoader
 		return null;
 	}
 
-	private static ConfigFile getDefaults()
+	private static ConfigJSONFile getDefaults()
 	{
 		// Build map
 		ArrayList<ConfigData> Everything = new ArrayList<ConfigData>();
@@ -251,7 +251,7 @@ public class ConfigLoader
 		}
 
 		// Create file
-		ConfigFile file = new ConfigFile();
+		ConfigJSONFile file = new ConfigJSONFile();
 
 		// XPEquation
 		file.XPRate = 1.0f;
@@ -275,6 +275,10 @@ public class ConfigLoader
 		{
 			file.MaterialData.put(configData.material.toString(), configData);
 		}
+		
+		file.LevelPhrases.add("Whoa watch out -PLAYERNAME- levelled up their -ITEMNAME- to -LEVEL-.... Dang!");
+		file.LevelPhrases.add("-PLAYERNAME-'s -ITEMNAME- is now Level -LEVEL-... Sheesh what a show off");
+		file.LevelPhrases.add("The hell!!? -PLAYERNAME-'s -ITEMNAME- is now Level -LEVEL-?? HAX!");
 		
 		return file;
 	}
