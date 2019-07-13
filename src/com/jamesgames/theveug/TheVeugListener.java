@@ -49,7 +49,6 @@ public class TheVeugListener implements Listener
 	{
 		String name = event.getPlayer().getDisplayName();
 		event.getPlayer().sendMessage("Hello " + name + "!");
-		plugin.getLogger().info(name + " Has joined the server YAYYYYY!");
 	}
 
 	@EventHandler
@@ -117,14 +116,12 @@ public class TheVeugListener implements Listener
 		ImportedData blockData = plugin.Config.GetDataForMaterial(event.getBlock().getType());
 		if(blockData == null) 
 		{
-			plugin.getLogger().info(event.getBlock().getType() + " not added to TheVeugData.json to earn XP from");
 			return;
 		}
 		
 		long rewardedXP = blockData.XPReward;
 		if(rewardedXP <= 0L) 
 		{
-			plugin.getLogger().info(event.getBlock().getType() + " provides no XP");
 			return;
 		}
 		
@@ -133,19 +130,16 @@ public class TheVeugListener implements Listener
 		ItemStack itemInHand = player.getItemInHand(); 
 		if (itemInHand == null || itemInHand.getType() == Material.AIR) 
 		{
-			plugin.getLogger().info(player.getDisplayName() + " isn't holding anything");
 			return;
 		}
 
 		ImportedData itemData = plugin.Config.GetDataForMaterial(itemInHand.getType());
 		if (itemData == null) 
 		{
-			plugin.getLogger().info(itemInHand.getType() + " not added to TheVeugData.json earn XP from.");
 			return;
 		}
-		if (itemData.LevelXPEquation == null || itemData.LevelXPEquation.length() == 0) 
+		else if (itemData.LevelXPEquation == null || itemData.LevelXPEquation.length() == 0) 
 		{
-			plugin.getLogger().info(itemInHand.getType() + " has no LevelXPEquation in TheVeugData.json level up with.");
 			return;
 		}
 		

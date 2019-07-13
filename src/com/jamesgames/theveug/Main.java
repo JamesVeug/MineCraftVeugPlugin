@@ -1,5 +1,6 @@
 package com.jamesgames.theveug;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -13,6 +14,10 @@ import com.jamesgames.theveug.LevelItem.LevelItemFactory;
 public class Main extends JavaPlugin
 {
 	public ConfigHandler Config;
+	
+	private RandomFactGenerator randomFactGenerator;
+	
+	private long TicksPerSecond = 20L;
 
 	@Override
 	public void onEnable()
@@ -20,6 +25,9 @@ public class Main extends JavaPlugin
 		getLogger().info("TheVeug onEnable has been invoked!");
 		Config = new ConfigHandler(this);
 		new LevelItemFactory(this);
+		randomFactGenerator = new RandomFactGenerator(this);
+		randomFactGenerator.runTaskTimer(this, 0L, 5 * TicksPerSecond);
+		
 
 		PluginManager pm = getServer().getPluginManager();
 		TheVeugListener listener = new TheVeugListener(this);
@@ -30,6 +38,7 @@ public class Main extends JavaPlugin
 	public void onDisable()
 	{
 		getLogger().info("TheVeug onDisable has been invoked!");
+		randomFactGenerator.cancel();
 	}
 	
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
@@ -52,7 +61,7 @@ public class Main extends JavaPlugin
 			{
 				float rate = Float.parseFloat(args[0]);
 				Config.setXPRate(rate);
-				this.getLogger().info("XP Rate now set to: " + rate);
+				Bukkit.broadcastMessage("XP Rate now set to: " + rate);
 				
 				return true;
 			}
@@ -60,7 +69,7 @@ public class Main extends JavaPlugin
 			{
 				float rate = Float.parseFloat(args[0]);
 				Config.setDropRate(rate);
-				this.getLogger().info("Drop Rate now set to: " + rate);
+				Bukkit.broadcastMessage("Drop Rate now set to: " + rate);
 				
 				return true;
 			}

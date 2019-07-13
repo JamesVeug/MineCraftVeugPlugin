@@ -34,7 +34,6 @@ public class LevelItem
 		lore.add(ChatColor.RESET + "#ID" + this.id);
 		meta.setLore(lore);
 		item.setItemMeta(meta);
-		System.out.print("ID: " + id + " refreshed to have " + this.xp + " xp");
 	}
 
 	public ItemStack getItem()
@@ -73,12 +72,24 @@ public class LevelItem
 		
 		String xpString = ChatColor.stripColor((String) lore.get(1)).substring(4);
 		int length = xpString.indexOf("/");
-		this.xp = Long.parseLong(xpString.substring(0, length));
-		this.maxXP = Long.parseLong(xpString.substring(length + 1));
+		this.xp = TryParse(xpString.substring(0, length), 0L);
+		this.maxXP = TryParse(xpString.substring(length + 1), 1L);
 		
 		// Update lore
 		refresh();
-		System.out.print("ID: " + id + " using " + this.xp + " xp");
+	}
+	
+	private Long TryParse(String s, Long defaultValue)
+	{
+		try
+		{
+			return Long.parseLong(s);
+		}
+		catch (NumberFormatException exception)
+		{
+			System.err.println(exception);
+			return defaultValue;
+		}
 	}
 
 	public int getLevel()
