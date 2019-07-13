@@ -30,6 +30,8 @@ import org.bukkit.metadata.MetadataValue;
 
 import com.jamesgames.theveug.Config.ConfigData;
 import com.jamesgames.theveug.Config.ImportedData;
+import com.jamesgames.theveug.LevelItem.LevelItem;
+import com.jamesgames.theveug.LevelItem.LevelItemFactory;
 import com.jamesgames.theveug.util.Util;
 
 public class TheVeugListener implements Listener

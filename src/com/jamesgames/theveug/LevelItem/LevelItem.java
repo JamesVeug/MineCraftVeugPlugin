@@ -1,4 +1,4 @@
-package com.jamesgames.theveug;
+package com.jamesgames.theveug.LevelItem;
 
 import java.util.ArrayList;
 import java.util.List;

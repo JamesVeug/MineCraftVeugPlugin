@@ -1,4 +1,4 @@
-package com.jamesgames.theveug;
+package com.jamesgames.theveug.LevelItem;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import com.jamesgames.theveug.Main;
 import com.jamesgames.theveug.util.Util;
 
 public class LevelItemFactory

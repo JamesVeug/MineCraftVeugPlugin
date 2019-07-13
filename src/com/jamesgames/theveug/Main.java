@@ -8,6 +8,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.jamesgames.theveug.Config.ConfigHandler;
+import com.jamesgames.theveug.LevelItem.LevelItemFactory;
 
 public class Main extends JavaPlugin
 {
