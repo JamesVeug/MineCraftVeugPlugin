@@ -76,9 +76,12 @@ public class RandomFactGenerator extends org.bukkit.scheduler.BukkitRunnable
 			{
 				return prefix + obj.get("setup") + '\n' + obj.get("delivery");  
 			}
+			else if(obj.containsKey("joke")) 
+			{
+				return prefix + obj.get("joke");  
+			}
 			
-			String joke = (String) obj.get("setup");
-			return prefix + joke;
+			return null;
 		}
 		catch (Exception exception)
 		{
