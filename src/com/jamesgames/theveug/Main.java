@@ -10,6 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.jamesgames.theveug.Config.ConfigHandler;
 import com.jamesgames.theveug.LevelItem.LevelItemFactory;
+import com.jamesgames.theveug.LevelItem.LevelItemHandler;
 
 public class Main extends JavaPlugin
 {
@@ -26,6 +27,7 @@ public class Main extends JavaPlugin
 		getLogger().info("TheVeug onEnable has been invoked!");
 		Config = new ConfigHandler(this);
 		new LevelItemFactory(this);
+		new LevelItemHandler(this);
 		randomFactGenerator = new RandomFactGenerator(this);
 		randomFactGenerator.runTaskTimer(this, 0L, 10 * 60 * TicksPerSecond);
 		

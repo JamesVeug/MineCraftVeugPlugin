@@ -15,6 +15,7 @@ import javax.script.ScriptException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -33,6 +34,7 @@ public class ConfigHandler
 {
 	private final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("JavaScript");
 	private HashMap<Material, ImportedData> materialData = new HashMap<Material, ImportedData>();
+	private HashMap<EntityType, ImportedData> entityTypeData = new HashMap<EntityType, ImportedData>();
 	private ArrayList<String> levelUpMessages = new ArrayList<String>();
 
 	private double xpRate;
@@ -59,6 +61,20 @@ public class ConfigHandler
 		return null;
 	}
 	
+	public ImportedData GetDataForEntityType(EntityType entityType)
+	{
+		if (entityTypeData == null)
+		{
+			System.out.println("entityTypeData is null wtf?");
+		}
+		else if (entityTypeData.containsKey(entityType))
+		{
+			return entityTypeData.get(entityType);
+		}
+
+		return null;
+	}
+	
 
 	public long getMaxXPForLevel(Material material, int level)
 	{
@@ -68,7 +84,7 @@ public class ConfigHandler
 			System.out.println("No data specified for Material: " + material.toString());
 			return 0L;
 		}
-		if (data.LevelXPEquation == null || data.LevelXPEquation.length() == 0) 
+		if (!data.canLevelUp()) 
 		{
 			System.out.println("No LevelXPEquation specified for Material: " + material.toString());
 			return 0L;
@@ -140,14 +156,18 @@ public class ConfigHandler
 		for (String materialString : config.MaterialData.keySet())
 		{
 			Material material = Util.ToMaterial(materialString);
-			if (material == Material.VOID_AIR) 
+			EntityType entityType = Util.ToEntityType(materialString);
+			if (material == Material.VOID_AIR && entityType == EntityType.UNKNOWN) 
 			{
 				System.out.println("Unknown Material type: " + materialString + ". skipping from config.");								
 				continue;
 			}
 			
-			ImportedData data = new ImportedData(material, config.MaterialData.get(materialString));
-			materialData.put(material, data);
+			ImportedData data = new ImportedData(material, entityType, config.MaterialData.get(materialString));
+			if (material != Material.VOID_AIR)
+				materialData.put(material, data);
+			else if (entityType != EntityType.UNKNOWN)
+				entityTypeData.put(entityType, data);
 		}
 		
 		return true;

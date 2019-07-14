@@ -11,12 +11,14 @@ import java.util.Random;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 import com.jamesgames.theveug.Main;
+import com.jamesgames.theveug.util.Util;
 
 public class ConfigLoader
 {	
@@ -73,6 +75,7 @@ public class ConfigLoader
 		String defaultDamageEquation = "-DEFAULT_DAMAGE- * -LEVEL-";
 		ConfigData blockTemplate = new ConfigData(Material.VOID_AIR).setXPReward(1);
 		ConfigData weaponTemplate = new ConfigData(Material.VOID_AIR).setXPEquation(defaultLevelEquation);
+		ConfigData mobTemplate = new ConfigData(Material.VOID_AIR).setXPReward(1);
 		
 		for (Material material : Material.values())
 		{
@@ -249,7 +252,6 @@ public class ConfigLoader
 				Everything.add(configData);
 			}
 		}
-
 		// Create file
 		ConfigJSONFile file = new ConfigJSONFile();
 
@@ -276,7 +278,12 @@ public class ConfigLoader
 			file.MaterialData.put(configData.material.toString(), configData);
 		}
 		
-		file.LevelPhrases.add("Whoa watch out -PLAYERNAME- levelled up their -ITEMNAME- to -LEVEL-.... Dang!");
+		for (EntityType material : EntityType.values()) 
+		{
+			file.MaterialData.put(material.toString(), new ConfigData(material, mobTemplate));
+		}
+
+		file.LevelPhrases.add("Whoa watch out -PLAYERNAME- leveled up their -ITEMNAME- to -LEVEL-.... Dang!");
 		file.LevelPhrases.add("-PLAYERNAME-'s -ITEMNAME- is now Level -LEVEL-... Sheesh what a show off");
 		file.LevelPhrases.add("The hell!!? -PLAYERNAME-'s -ITEMNAME- is now Level -LEVEL-?? HAX!");
 		

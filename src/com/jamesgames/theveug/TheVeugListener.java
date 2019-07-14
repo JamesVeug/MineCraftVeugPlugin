@@ -4,18 +4,21 @@ import java.util.List;
 import java.util.Random;
 import javax.script.ScriptException;
 
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import com.jamesgames.theveug.Config.ImportedData;
 import com.jamesgames.theveug.LevelItem.LevelItem;
 import com.jamesgames.theveug.LevelItem.LevelItemFactory;
+import com.jamesgames.theveug.LevelItem.LevelItemHandler;
 import com.jamesgames.theveug.util.Util;
 
 public class TheVeugListener implements Listener
@@ -35,23 +38,81 @@ public class TheVeugListener implements Listener
 		String name = player.getDisplayName();
 		player.sendMessage("Hello " + name + "!");
 	}
+	
+	@EventHandler
+    public void onKill(EntityDeathEvent e) {        
+        Entity deadThing = e.getEntity();
+		plugin.Log("Killed " + deadThing.getType().toString());
+		if (deadThing instanceof Player)
+			return;
+		
+        Entity killer = e.getEntity().getKiller();
+        if(killer == null) {
+        	return; // Died naturally
+        }
+        
+        plugin.Log("Killer " + killer.getType().toString());
+		if (!(killer instanceof Player))
+			return;
+		
+		Player player = (Player)killer;
+		ItemStack itemInHand = player.getItemInHand();
+        plugin.Log("Weapon " + itemInHand.getType().toString());
+        
+		// Make sure this item can level up
+		ImportedData weaponData = plugin.Config.GetDataForMaterial(itemInHand.getType());
+		if(weaponData == null || !weaponData.canLevelUp())
+		{
+	        plugin.Log("No Data for weapon " + itemInHand.getType().toString());
+			return;
+		}
+
+		// Make sure the killed thing has data
+        plugin.Log("Got Weapon Data");
+		EntityType entityType = deadThing.getType();
+		ImportedData mobData = plugin.Config.GetDataForEntityType(deadThing.getType());
+		if(mobData == null) 
+		{
+			plugin.Log("No data found for type " + deadThing.getType().toString());
+			return;
+		}
+		else if(mobData.XPReward <= 0) 
+		{
+			plugin.Log(deadThing.getType().toString() + " Rewards no XP");
+			return;
+		}
+
+        plugin.Log("Got Entity Data");
+        
+		// Add XP
+		LevelItemHandler.Instance.AddExperience(itemInHand, mobData.XPReward, player);
+		
+		// Create new item
+		CreateDrop(player, mobData, deadThing.getWorld(), deadThing.getLocation());
+	}
 
 	@EventHandler
 	public void onBreak(BlockBreakEvent event)
 	{	
+		// Give XP
 		AwardXP(event);
 		
 		// Create new item
-		CreateDrop(event);
-	}
-
-	private void CreateDrop(BlockBreakEvent event)
-	{
-		// Player used fists to break block?
 		Player player = event.getPlayer();
 		ImportedData blockData = plugin.Config.GetDataForMaterial(event.getBlock().getType());
-		if (blockData == null) 
+		if (blockData != null) 
 		{
+			CreateDrop(player, blockData, event.getBlock().getWorld(), event.getBlock().getLocation());
+		}
+	}
+
+	private void CreateDrop(Player player, ImportedData blockData, World world, Location location)
+	{
+		// Get list of items to drop
+		List<ImportedData.ImportedDataDrop> itemDrops = blockData.ItemDrops;
+		if(itemDrops.size() <= 0) 
+		{
+			// Nothing to drop
 			return;
 		}
 		
@@ -66,9 +127,6 @@ public class TheVeugListener implements Listener
 				level = item.getLevel();
 			}
 		}
-		
-		// Get list of items to drop
-		List<ImportedData.ImportedDataDrop> itemDrops = blockData.ItemDrops;
 		
 		// Choose a random item to drop
 		int index = new Random().nextInt(itemDrops.size());
@@ -96,7 +154,7 @@ public class TheVeugListener implements Listener
 
 		// Drop Item
 		ItemStack dropItem = new ItemStack(drop.material, 1);
-		event.getBlock().getWorld().dropItem(event.getBlock().getLocation(), dropItem);
+		world.dropItem(location, dropItem);
 	}
 
 	private void AwardXP(BlockBreakEvent event)
@@ -116,72 +174,8 @@ public class TheVeugListener implements Listener
 		// Player used fists to break block?
 		Player player = event.getPlayer();
 		ItemStack itemInHand = player.getItemInHand(); 
-		if (itemInHand == null || itemInHand.getType() == Material.AIR) 
-		{
-			return;
-		}
-
-		ImportedData itemData = plugin.Config.GetDataForMaterial(itemInHand.getType());
-		if (itemData == null) 
-		{
-			return;
-		}
-		else if (itemData.LevelXPEquation == null || itemData.LevelXPEquation.length() == 0) 
-		{
-			return;
-		}
 		
-		// Get or create LevelItem
-		LevelItem item = LevelItemFactory.Instance.get(itemInHand);
-		
-		long xp = item.getXP() + (long)(rewardedXP * plugin.Config.getXpRate());
-		long maxXP = item.getMaxXP();
-		int level = item.getLevel();
-		boolean leveled = xp >= maxXP; 
-		while(xp >= maxXP) 
-		{
-			xp -= maxXP;
-			level += 1;
-			maxXP = plugin.Config.getMaxXPForLevel(itemInHand.getType(), level);
-		}
-		
-		// Behavior when leveling
-		if(leveled) 
-		{
-			String message = plugin.Config.RandomLevelUpMessage();
-			message = message.replaceAll("-PLAYERNAME-", player.getDisplayName());
-			message = message.replaceAll("-ITEMNAME-", getMaterialName(itemInHand.getType()));
-			message = message.replaceAll("-LEVEL-", String.valueOf(level));
-			Bukkit.broadcastMessage(message);
-			itemInHand.setDurability((short) 0);
-		}
-		
-
-		item.update(xp, maxXP, level);
-	}
-	
-	private String getMaterialName(Material material)
-	{
-		String materialString = material.toString().toLowerCase();
-		String[] words = materialString.split("_");
-		
-		materialString = StringUtils.capitalize(words[0]);
-		for (int i = 1; i < words.length; i++)
-		{
-			materialString += " " + StringUtils.capitalize(words[i]);
-		}
-
-		return materialString;
-	}
-
-	public boolean isTool(Material material)
-	{
-		return materialEndsWith(material, "SPADE") || materialEndsWith(material, "PICKAXE")
-				|| materialEndsWith(material, "AXE") || materialEndsWith(material, "SHOVEL");
-	}
-
-	private boolean materialEndsWith(Material material, String matchName)
-	{
-		return material.name().endsWith(matchName);
+		// Add XP
+		LevelItemHandler.Instance.AddExperience(itemInHand, rewardedXP, player);
 	}
 }

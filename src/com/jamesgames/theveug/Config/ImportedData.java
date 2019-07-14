@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 
 import com.jamesgames.theveug.util.Util;
 
@@ -23,15 +24,18 @@ public class ImportedData
 	}
 	
 	public Material material;
+	public EntityType entityType;
 	public long XPReward = 0;
 	public List<ImportedDataDrop> ItemDrops;
 	public String LevelXPEquation = null;
 	public int RandomAmountMin = 1; // Inclusive
 	public int RandomAmountMax = 1; // Inclusive
 
-	public ImportedData(Material material, ConfigData data)
+	public ImportedData(Material material, EntityType entityType, ConfigData data)
 	{
+		
 		this.material = material;
+		this.entityType = entityType;
 		this.XPReward = data.XPReward;
 		this.LevelXPEquation = data.LevelXPEquation;
 		this.RandomAmountMin = data.RandomAmountMin;
@@ -52,5 +56,15 @@ public class ImportedData
 			String value = data.ItemDrops.get(materialString);
 			this.ItemDrops.add(new ImportedDataDrop(dropMaterial, value));
 		}
+	}
+	
+	public boolean isEntity() 
+	{
+		return this.entityType != EntityType.UNKNOWN;
+	}
+	
+	public boolean canLevelUp() 
+	{
+		return this.LevelXPEquation != null && this.LevelXPEquation.length() > 0;
 	}
 }
