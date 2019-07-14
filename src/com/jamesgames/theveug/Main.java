@@ -18,6 +18,7 @@ public class Main extends JavaPlugin
 	private RandomFactGenerator randomFactGenerator;
 	
 	private long TicksPerSecond = 20L;
+	private boolean debugLogsEnabled;
 
 	@Override
 	public void onEnable()
@@ -26,7 +27,7 @@ public class Main extends JavaPlugin
 		Config = new ConfigHandler(this);
 		new LevelItemFactory(this);
 		randomFactGenerator = new RandomFactGenerator(this);
-		randomFactGenerator.runTaskTimer(this, 0L, 5 * TicksPerSecond);
+		randomFactGenerator.runTaskTimer(this, 0L, 10 * 60 * TicksPerSecond);
 		
 
 		PluginManager pm = getServer().getPluginManager();
@@ -73,6 +74,16 @@ public class Main extends JavaPlugin
 				
 				return true;
 			}
+			case "toggle_debug_logs":
+			{
+				debugLogsEnabled = Boolean.parseBoolean(args[0]);
+				if(debugLogsEnabled)
+					Bukkit.broadcastMessage("Debug Logs are now toggled.");
+				else
+					Bukkit.broadcastMessage("Debug Logs are now disabled.");
+				
+				return true;
+			}
 			default:
 			{
 				sender.sendMessage("Unknown command '" + command.getName() + "'");
@@ -80,5 +91,19 @@ public class Main extends JavaPlugin
 		}
 
 		return false;
+	}
+	
+	public void Log(String message)
+	{
+		if (!debugLogsEnabled) return;
+
+		Bukkit.broadcastMessage("[Debug] " + message);
+	}
+
+	public void Log(String message, Object... params)
+	{
+		if (!debugLogsEnabled) return;
+
+		Log(String.format(message, params));
 	}
 }

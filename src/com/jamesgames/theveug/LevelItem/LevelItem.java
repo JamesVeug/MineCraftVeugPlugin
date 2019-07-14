@@ -24,7 +24,7 @@ public class LevelItem
 		this.maxXP = 0;
 	}
 
-	public void refresh()
+	private void updateItemLore()
 	{
 		ItemMeta meta = item.getItemMeta();
 		List<String> lore = meta.hasLore() ? meta.getLore() : new ArrayList(3);
@@ -56,19 +56,22 @@ public class LevelItem
 		return maxXP;
 	}
 
-	public void updateLore(long xp, long maxXP, int level)
+	public void update(long xp, long maxXP, int level)
 	{
 		this.xp = xp;
 		this.maxXP = maxXP;
 		this.level = level;
-		refresh();
+		updateItemLore();
 	}
 	
-	public void useLore(List<String> lore) 
+	public void useLore(List<String> lore, boolean overwriteID) 
 	{
 		// Update from lore
 		this.level = Integer.parseInt(ChatColor.stripColor((String) lore.get(0)).substring(7));
-		this.id = Integer.parseInt(ChatColor.stripColor((String) lore.get(2)).substring(3));
+		if(overwriteID) 
+		{
+			this.id = Integer.parseInt(ChatColor.stripColor((String) lore.get(2)).substring(3));
+		}
 		
 		String xpString = ChatColor.stripColor((String) lore.get(1)).substring(4);
 		int length = xpString.indexOf("/");
@@ -76,7 +79,7 @@ public class LevelItem
 		this.maxXP = TryParse(xpString.substring(length + 1), 1L);
 		
 		// Update lore
-		refresh();
+		updateItemLore();
 	}
 	
 	private Long TryParse(String s, Long defaultValue)
@@ -100,5 +103,8 @@ public class LevelItem
 	public void setId(long id)
 	{
 		this.id = id;
+		
+		// Update lore
+		updateItemLore();
 	}
 }

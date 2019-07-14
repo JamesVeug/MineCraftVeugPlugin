@@ -12,3 +12,6 @@ commands:
     drop_rate:
         description: Sets global drop rate of all items dropped from blocks
         usage: /<command> amount
+    toggle_debug_logs:
+        description: Enable/Disable to view logs in console
+        usage: /<command> true

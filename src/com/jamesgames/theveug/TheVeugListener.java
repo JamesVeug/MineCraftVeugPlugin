@@ -1,34 +1,18 @@
 package com.jamesgames.theveug;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
-
 import javax.script.ScriptException;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.material.MaterialData;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.metadata.MetadataValue;
-
-import com.jamesgames.theveug.Config.ConfigData;
 import com.jamesgames.theveug.Config.ImportedData;
 import com.jamesgames.theveug.LevelItem.LevelItem;
 import com.jamesgames.theveug.LevelItem.LevelItemFactory;
@@ -47,8 +31,9 @@ public class TheVeugListener implements Listener
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event)
 	{
-		String name = event.getPlayer().getDisplayName();
-		event.getPlayer().sendMessage("Hello " + name + "!");
+		Player player = event.getPlayer();
+		String name = player.getDisplayName();
+		player.sendMessage("Hello " + name + "!");
 	}
 
 	@EventHandler
@@ -64,19 +49,22 @@ public class TheVeugListener implements Listener
 	{
 		// Player used fists to break block?
 		Player player = event.getPlayer();
-		ItemStack itemInHand = player.getItemInHand();
 		ImportedData blockData = plugin.Config.GetDataForMaterial(event.getBlock().getType());
 		if (blockData == null) 
 		{
-			plugin.getLogger().info(event.getBlock().getType() + " not added to TheVeugData.json earn extra drops from.");
 			return;
 		}
 		
 		int level = 1;
+		ItemStack itemInHand = player.getItemInHand();
 		if (itemInHand != null) 
 		{
-			LevelItem item = LevelItemFactory.Instance.get(itemInHand);
-			level = item.getLevel();
+			ImportedData data = plugin.Config.GetDataForMaterial(itemInHand.getType());
+			if (data != null && data.LevelXPEquation != null && data.LevelXPEquation.length() > 0)
+			{
+				LevelItem item = LevelItemFactory.Instance.get(itemInHand);
+				level = item.getLevel();
+			}
 		}
 		
 		// Get list of items to drop
@@ -169,7 +157,7 @@ public class TheVeugListener implements Listener
 		}
 		
 
-		item.updateLore(xp, maxXP, level);
+		item.update(xp, maxXP, level);
 	}
 	
 	private String getMaterialName(Material material)
