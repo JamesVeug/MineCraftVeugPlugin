@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -31,12 +32,12 @@ public class RandomFactGenerator extends org.bukkit.scheduler.BukkitRunnable
 		if (joke == null || joke.length() == 0 || joke == "null") 
 			return;
 
-		Bukkit.broadcastMessage(joke);
+		Bukkit.broadcastMessage(ChatColor.YELLOW + joke + ChatColor.RESET);
 	}
 
 	private String GetRandomJoke()
 	{
-		int random = new Random().nextInt(3);
+		int random = new Random().nextInt(2);
 
 		switch (random)
 		{
@@ -44,8 +45,6 @@ public class RandomFactGenerator extends org.bukkit.scheduler.BukkitRunnable
 				return ICanHasDadJoke();
 			case 1:
 				return JokeAPI();
-			case 2:
-				return GeekJokes();
 		}
 
 		return null;
@@ -53,6 +52,7 @@ public class RandomFactGenerator extends org.bukkit.scheduler.BukkitRunnable
 
 	private String GeekJokes()
 	{
+		// Removed as it's all chuck norris jokes
 		String jsonResponse = sendGet("https://geek-jokes.sameerkumar.website/api");
 		if (jsonResponse == null || jsonResponse.length() == 0) 
 			return null;
