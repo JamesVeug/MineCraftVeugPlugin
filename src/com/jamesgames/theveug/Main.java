@@ -1,7 +1,10 @@
 package com.jamesgames.theveug;
 
+import java.util.ArrayList;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -9,8 +12,10 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.jamesgames.theveug.Config.ConfigHandler;
+import com.jamesgames.theveug.Config.ImportedData;
 import com.jamesgames.theveug.LevelItem.LevelItemFactory;
 import com.jamesgames.theveug.LevelItem.LevelItemHandler;
+import com.jamesgames.theveug.util.Util;
 
 public class Main extends JavaPlugin
 {
@@ -52,11 +57,11 @@ public class Main extends JavaPlugin
 			{
 				if (Config.loadConfig())
 				{
-					sender.sendMessage(ChatColor.GREEN + "Config reloaded successfully!." + ChatColor.RESET);
+					Bukkit.broadcastMessage("TheVeug Config has been reloaded!");
 				}
 				else
 				{
-					sender.sendMessage(ChatColor.GREEN + "Config failed to reloaded..." + ChatColor.RESET);
+					sender.sendMessage(ChatColor.RED + "TheVeug Config failed to reload..." + ChatColor.RESET);
 				}
 				return true;
 			}
@@ -83,6 +88,50 @@ public class Main extends JavaPlugin
 					Bukkit.broadcastMessage("Debug Logs are now toggled.");
 				else
 					Bukkit.broadcastMessage("Debug Logs are now disabled.");
+				
+				return true;
+			}
+			case "what_drops":
+			{
+				Material material = Util.ToMaterial(args[0]);
+				ArrayList<Material> droppedByList = Config.getMaterialsDroppedBy(material);
+				if(droppedByList == null) {
+					sender.sendMessage(ChatColor.RED + "Unable to get drops for " + args[0] + ChatColor.RESET);
+				}
+				else if(droppedByList.size() == 0) {
+					String responseMessage = Util.getMaterialName(material) + " is not dropped by anything.";
+					sender.sendMessage(ChatColor.GREEN + responseMessage + ChatColor.RESET);
+				}
+				else {
+					String responseMessage = Util.getMaterialName(material) + " is dropped by:";
+					for(int i = 0; i < droppedByList.size(); i++) {
+						responseMessage += "\n  " + Util.getMaterialName(droppedByList.get(i));
+					}
+					sender.sendMessage(ChatColor.GREEN + responseMessage + ChatColor.RESET);			
+				}
+
+				
+				return true;
+			}
+			case "what_drops_from":
+			{
+				Material material = Util.ToMaterial(args[0]);
+				ImportedData data = Config.GetDataForMaterial(material);
+				if(data == null || data.ItemDrops == null) {
+					sender.sendMessage(ChatColor.GREEN + "Unable to get drops of " + args[0] + ChatColor.RESET);
+				}
+				else if(data.ItemDrops.size() == 0) {
+					String responseMessage = Util.getMaterialName(material) + " does not dropp by anything.";
+					sender.sendMessage(ChatColor.GREEN + responseMessage + ChatColor.RESET);
+				}
+				else {
+					String responseMessage = Util.getMaterialName(material) + " drops:";
+					for(int i = 0; i < data.ItemDrops.size(); i++) {
+						responseMessage += "\n  " + Util.getMaterialName(data.ItemDrops.get(i).material);
+					}
+					sender.sendMessage(ChatColor.GREEN + responseMessage + ChatColor.RESET);			
+				}
+
 				
 				return true;
 			}

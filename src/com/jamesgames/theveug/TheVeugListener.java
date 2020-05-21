@@ -136,7 +136,7 @@ public class TheVeugListener implements Listener
 		double chance = plugin.Config.getDropRate();
 		try
 		{
-			double evaluated = plugin.Config.solve(drop.Equation.replace("-LEVEL-", String.valueOf(level))).doubleValue();
+			double evaluated = plugin.Config.solve(drop.Equation).doubleValue() * level;
 			chance = Util.clamp(chance * evaluated, 0, 100D);
 		}
 		catch (ScriptException e)

@@ -22,6 +22,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 import com.jamesgames.theveug.Main;
+import com.jamesgames.theveug.Config.ImportedData.ImportedDataDrop;
 import com.jamesgames.theveug.util.Util;
 
 /**
@@ -33,7 +34,8 @@ import com.jamesgames.theveug.util.Util;
 public class ConfigHandler
 {
 	private final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("JavaScript");
-	private HashMap<Material, ImportedData> materialData = new HashMap<Material, ImportedData>();
+	private HashMap<Material, ImportedData> materialToData = new HashMap<Material, ImportedData>();
+	private HashMap<Material, ArrayList<Material>> materialDroppedByLookupData = new HashMap<Material, ArrayList<Material>>();
 	private HashMap<EntityType, ImportedData> entityTypeData = new HashMap<EntityType, ImportedData>();
 	private ArrayList<String> levelUpMessages = new ArrayList<String>();
 
@@ -49,13 +51,13 @@ public class ConfigHandler
 	
 	public ImportedData GetDataForMaterial(Material material)
 	{
-		if (materialData == null)
+		if (materialToData == null)
 		{
 			System.out.println("materialData is null wtf?");
 		}
-		else if (materialData.containsKey(material))
+		else if (materialToData.containsKey(material))
 		{
-			return materialData.get(material);
+			return materialToData.get(material);
 		}
 
 		return null;
@@ -152,7 +154,8 @@ public class ConfigHandler
 		// Level up messages
 		levelUpMessages = config.LevelPhrases;
 		
-		materialData.clear();
+		materialToData.clear();
+		materialDroppedByLookupData.clear();
 		for (String materialString : config.MaterialData.keySet())
 		{
 			Material material = Util.ToMaterial(materialString);
@@ -164,10 +167,22 @@ public class ConfigHandler
 			}
 			
 			ImportedData data = new ImportedData(material, entityType, config.MaterialData.get(materialString));
-			if (material != Material.VOID_AIR)
-				materialData.put(material, data);
-			else if (entityType != EntityType.UNKNOWN)
+			if (material != Material.VOID_AIR) {
+				// Add to material list
+				materialToData.put(material, data);
+				
+				// Add to lookup
+				for (int i = 0; i < data.ItemDrops.size(); i++) {
+					ImportedDataDrop drop = data.ItemDrops.get(i);
+					if(!materialDroppedByLookupData.containsKey(drop.material)) {
+						materialDroppedByLookupData.put(drop.material, new ArrayList<Material>());
+					}
+					materialDroppedByLookupData.get(drop.material).add(material);
+				}
+			}
+			else if (entityType != EntityType.UNKNOWN) {				
 				entityTypeData.put(entityType, data);
+			}
 		}
 		
 		return true;
@@ -191,6 +206,16 @@ public class ConfigHandler
 	public void setDropRate(double rate)
 	{
 		dropRate = rate;
+	}
+
+	public ArrayList<Material> getMaterialsDroppedBy(Material material)
+	{
+		if(materialDroppedByLookupData.containsKey(material)) {
+			return materialDroppedByLookupData.get(material);
+		}
+		else {
+			return null;
+		}
 	}
 	
 	public String RandomLevelUpMessage() 

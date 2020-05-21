@@ -31,18 +31,17 @@ public class ImportedData
 	public int RandomAmountMin = 1; // Inclusive
 	public int RandomAmountMax = 1; // Inclusive
 
-	public ImportedData(Material material, EntityType entityType, ConfigData data)
+	public ImportedData(Material material, EntityType entityType, ConfigData config)
 	{
-		
 		this.material = material;
 		this.entityType = entityType;
-		this.XPReward = data.XPReward;
-		this.LevelXPEquation = data.LevelXPEquation;
-		this.RandomAmountMin = data.RandomAmountMin;
-		this.RandomAmountMax = data.RandomAmountMax;
+		this.XPReward = config.XPReward;
+		this.LevelXPEquation = config.LevelXPEquation;
+		this.RandomAmountMin = config.RandomAmountMin;
+		this.RandomAmountMax = config.RandomAmountMax;
 		
-		ItemDrops = new ArrayList<ImportedDataDrop>(data.ItemDrops.size());
-		for (String materialString : data.ItemDrops.keySet())
+		ItemDrops = new ArrayList<ImportedDataDrop>(config.ItemDrops.size());
+		for (String materialString : config.ItemDrops.keySet())
 		{
 			Material dropMaterial = Util.ToMaterial(materialString);
 			if (dropMaterial == Material.VOID_AIR)
@@ -53,7 +52,7 @@ public class ImportedData
 			}
 			
 
-			String value = data.ItemDrops.get(materialString);
+			String value = config.ItemDrops.get(materialString);
 			this.ItemDrops.add(new ImportedDataDrop(dropMaterial, value));
 		}
 	}

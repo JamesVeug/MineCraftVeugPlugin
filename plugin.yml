@@ -1,7 +1,7 @@
 name: TheVeug
 main: com.jamesgames.theveug.Main
 version: 1.0
-api-version: 1.14
+api-version: 1.15
 commands:
     reload_config:
         description: Reloads all data from the json
@@ -15,3 +15,9 @@ commands:
     toggle_debug_logs:
         description: Enable/Disable to view logs in console
         usage: /<command> true
+    what_drops:
+        description: Lists what drops the given material
+        usage: /<command> material
+    what_drops_from:
+        description: Lists what drops from the given material
+        usage: /<command> material
