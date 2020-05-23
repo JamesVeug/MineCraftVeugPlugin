@@ -2,12 +2,14 @@ package com.jamesgames.theveug;
 
 import java.util.ArrayList;
 
+import com.jamesgames.theveug.LevelItem.LevelItem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -15,10 +17,13 @@ import com.jamesgames.theveug.Config.ConfigHandler;
 import com.jamesgames.theveug.Config.ImportedData;
 import com.jamesgames.theveug.LevelItem.LevelItemFactory;
 import com.jamesgames.theveug.LevelItem.LevelItemHandler;
+import com.jamesgames.theveug.LevelItem.Buffs.LevelItemBuffFactory;
 import com.jamesgames.theveug.util.Util;
 
 public class Main extends JavaPlugin
 {
+	public static Main Instance;
+
 	public ConfigHandler Config;
 	
 	private RandomFactGenerator randomFactGenerator;
@@ -29,10 +34,13 @@ public class Main extends JavaPlugin
 	@Override
 	public void onEnable()
 	{
+		Instance = this;
+
 		getLogger().info("TheVeug onEnable has been invoked!");
 		Config = new ConfigHandler(this);
 		new LevelItemFactory(this);
 		new LevelItemHandler(this);
+		new LevelItemBuffFactory(this);
 		randomFactGenerator = new RandomFactGenerator(this);
 		randomFactGenerator.runTaskTimer(this, 0L, 10 * 60 * TicksPerSecond);
 		
@@ -132,8 +140,19 @@ public class Main extends JavaPlugin
 					sender.sendMessage(ChatColor.GREEN + responseMessage + ChatColor.RESET);			
 				}
 
-				
 				return true;
+			}
+			case "level_up_item":
+			{
+				Player player = (Player)sender;
+				ItemStack itemInHand = player.getInventory().getItemInMainHand();
+				LevelItem levelItem = LevelItemFactory.Instance.get(itemInHand);
+				if(levelItem != null) {
+					LevelItemHandler.Instance.AddExperience(levelItem, levelItem.getMaxXP(), player);
+					return true;
+				}
+
+				return false;
 			}
 			default:
 			{

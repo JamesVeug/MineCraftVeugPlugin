@@ -21,3 +21,6 @@ commands:
     what_drops_from:
         description: Lists what drops from the given material
         usage: /<command> material
+    level_up_item:
+        description: Levels the currently held item up by 1
+        usage: /<command>

@@ -30,6 +30,10 @@ public class LevelItemFactory
 
 	public LevelItem get(ItemStack item)
 	{
+		if(item == null){
+			return null;
+		}
+
 		long id = Util.getId(item);
 		plugin.Log("Getting Item: " + id);
 		if (id <= 0)

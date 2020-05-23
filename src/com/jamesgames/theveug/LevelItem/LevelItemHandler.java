@@ -1,10 +1,7 @@
 package com.jamesgames.theveug.LevelItem;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.inventory.ItemStack;
 
 import com.jamesgames.theveug.Main;
 import com.jamesgames.theveug.Config.ImportedData;
@@ -23,31 +20,28 @@ public class LevelItemHandler
 	}
 
 	
-	public void AddExperience(ItemStack itemInHand, long rewardedXP, Player holder)
+	public void AddExperience(LevelItem item, long rewardedXP, Player holder)
 	{ 
-		if (itemInHand == null) 
+		if (item == null)
 		{
 			return;
 		}
 
-		ImportedData itemData = plugin.Config.GetDataForMaterial(itemInHand.getType());
-		if (itemData == null || !itemData.canLevelUp()) 
-		{
-			return;
-		}
-		
-		// Get or create LevelItem
-		LevelItem item = LevelItemFactory.Instance.get(itemInHand);
-		
-		long xp = item.getXP() + (long)(rewardedXP * plugin.Config.getXpRate());
+		double xpRate = plugin.Config.getXpRate();
+
+		long xp = item.getXP() + (long)(rewardedXP * xpRate);
 		long maxXP = item.getMaxXP();
 		int level = item.getLevel();
 		boolean leveled = xp >= maxXP; 
-		while(xp >= maxXP) 
+		while(xp >= maxXP)
 		{
 			xp -= maxXP;
 			level += 1;
-			maxXP = plugin.Config.getMaxXPForLevel(itemInHand.getType(), level);
+			maxXP = plugin.Config.getMaxXPForLevel(item.getItem().getType(), level);
+
+			if(maxXP <= 0){
+				break;
+			}
 		}
 		
 		// Behavior when leveling
@@ -55,13 +49,14 @@ public class LevelItemHandler
 		{
 			String message = plugin.Config.RandomLevelUpMessage();
 			message = message.replaceAll("-PLAYERNAME-", holder.getDisplayName());
-			message = message.replaceAll("-ITEMNAME-", Util.getMaterialName(itemInHand.getType()));
+			message = message.replaceAll("-ITEMNAME-", Util.getMaterialName(item.getItem().getType()));
 			message = message.replaceAll("-LEVEL-", String.valueOf(level));
 			Bukkit.broadcastMessage(message);
-			itemInHand.setDurability((short) 0);
+			item.getItem().setDurability((short) 0);
 		}
 		
 
 		item.update(xp, maxXP, level);
+		item.refreshBuffs();
 	}
 }

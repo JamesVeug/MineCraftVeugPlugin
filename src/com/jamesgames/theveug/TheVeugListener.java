@@ -1,13 +1,17 @@
 package com.jamesgames.theveug;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import javax.script.ScriptException;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -83,99 +87,46 @@ public class TheVeugListener implements Listener
 		}
 
         plugin.Log("Got Entity Data");
-        
-		// Add XP
-		LevelItemHandler.Instance.AddExperience(itemInHand, mobData.XPReward, player);
-		
+
 		// Create new item
-		CreateDrop(player, mobData, deadThing.getWorld(), deadThing.getLocation());
+		LevelItem levelItem = LevelItemFactory.Instance.get(itemInHand);
+		if(levelItem != null) {
+			// Add XP
+			if(levelItem.getMaxXP() > 0) {
+				LevelItemHandler.Instance.AddExperience(levelItem, mobData.XPReward, player);
+			}
+
+			// Create drop
+			TheVeug.CreateDrop(mobData, deadThing.getWorld(), deadThing.getLocation(), levelItem);
+		}
 	}
 
 	@EventHandler
 	public void onBreak(BlockBreakEvent event)
-	{	
-		// Give XP
-		AwardXP(event);
-		
+	{
 		// Create new item
 		Player player = event.getPlayer();
+		ItemStack itemInHand = player.getInventory().getItemInMainHand();
+		LevelItem levelItem = LevelItemFactory.Instance.get(itemInHand);
+		if (levelItem == null)
+		{
+			return;
+		}
+
 		ImportedData blockData = plugin.Config.GetDataForMaterial(event.getBlock().getType());
 		if (blockData != null) 
 		{
-			CreateDrop(player, blockData, event.getBlock().getWorld(), event.getBlock().getLocation());
-		}
-	}
+			// Give XP
+			long rewardedXP = (long) Math.ceil(blockData.XPReward * levelItem.getXPRateBuff());
+			TheVeug.AwardWeaponXP(player, rewardedXP, levelItem);
 
-	private void CreateDrop(Player player, ImportedData blockData, World world, Location location)
-	{
-		// Get list of items to drop
-		List<ImportedData.ImportedDataDrop> itemDrops = blockData.ItemDrops;
-		if(itemDrops.size() <= 0) 
-		{
-			// Nothing to drop
-			return;
+			// Create drop
+			TheVeug.CreateDrop(blockData, event.getBlock().getWorld(), event.getBlock().getLocation(), levelItem);
 		}
 		
-		int level = 1;
-		ItemStack itemInHand = player.getItemInHand();
-		if (itemInHand != null) 
-		{
-			ImportedData data = plugin.Config.GetDataForMaterial(itemInHand.getType());
-			if (data != null && data.LevelXPEquation != null && data.LevelXPEquation.length() > 0)
-			{
-				LevelItem item = LevelItemFactory.Instance.get(itemInHand);
-				level = item.getLevel();
-			}
-		}
-		
-		// Choose a random item to drop
-		int index = new Random().nextInt(itemDrops.size());
-		ImportedData.ImportedDataDrop drop = itemDrops.get(index);
-		
-		// Get chance of dropping
-		double chance = plugin.Config.getDropRate();
-		try
-		{
-			double evaluated = plugin.Config.solve(drop.Equation).doubleValue() * level;
-			chance = Util.clamp(chance * evaluated, 0, 100D);
-		}
-		catch (ScriptException e)
-		{
-			plugin.getLogger()
-					.info("An exception occurred while attempting to solve item percentage for the material '"
-							+ drop.material + "' : '" + drop.Equation + "'.");
-			return;
-		}
-
-		// Roll random change
-		double random = Math.random(); 
-		if (random * 100.0D >= chance * 100.0D)
-			return;
-
-		// Drop Item
-		ItemStack dropItem = new ItemStack(drop.material, 1);
-		world.dropItem(location, dropItem);
-	}
-
-	private void AwardXP(BlockBreakEvent event)
-	{
-		ImportedData blockData = plugin.Config.GetDataForMaterial(event.getBlock().getType());
-		if(blockData == null) 
-		{
-			return;
-		}
-		
-		long rewardedXP = blockData.XPReward;
-		if(rewardedXP <= 0L) 
-		{
-			return;
-		}
-		
-		// Player used fists to break block?
-		Player player = event.getPlayer();
-		ItemStack itemInHand = player.getItemInHand(); 
-		
-		// Add XP
-		LevelItemHandler.Instance.AddExperience(itemInHand, rewardedXP, player);
+		// Use buffs
+		levelItem.onBreak(event);
+		ExperienceOrb spawnEntity = (ExperienceOrb)event.getBlock().getWorld().spawnEntity(event.getBlock().getLocation(), EntityType.EXPERIENCE_ORB);
+		spawnEntity.setExperience(100);
 	}
 }

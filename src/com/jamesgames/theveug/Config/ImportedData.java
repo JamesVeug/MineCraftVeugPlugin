@@ -52,6 +52,7 @@ public class ImportedData
 			}
 			
 
+
 			String value = config.ItemDrops.get(materialString);
 			this.ItemDrops.add(new ImportedDataDrop(dropMaterial, value));
 		}
