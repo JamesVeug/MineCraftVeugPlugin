@@ -27,10 +27,15 @@ public class LevelItemHandler
 			return;
 		}
 
+		// Make sure we can level this
+		long maxXP = item.getMaxXP();
+		if(maxXP == 0){
+			return;
+		}
+
 		double xpRate = plugin.Config.getXpRate();
 
 		long xp = item.getXP() + (long)(rewardedXP * xpRate);
-		long maxXP = item.getMaxXP();
 		int level = item.getLevel();
 		boolean leveled = xp >= maxXP; 
 		while(xp >= maxXP)
@@ -38,10 +43,6 @@ public class LevelItemHandler
 			xp -= maxXP;
 			level += 1;
 			maxXP = plugin.Config.getMaxXPForLevel(item.getItem().getType(), level);
-
-			if(maxXP <= 0){
-				break;
-			}
 		}
 		
 		// Behavior when leveling

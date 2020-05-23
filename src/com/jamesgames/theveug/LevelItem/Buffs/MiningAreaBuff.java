@@ -42,7 +42,6 @@ public class MiningAreaBuff extends ALevelItemBuff {
 
 		int maxDistance = level;
 		long totalXPEarned = 0;
-		int totalProcessedBlocks = 0;
 		for(int x = -maxDistance; x <= maxDistance; x++) {
 			for(int y = 0; y <= maxDistance * 2; y++) {
 				for(int z = -maxDistance; z <= maxDistance; z++) {
@@ -64,7 +63,6 @@ public class MiningAreaBuff extends ALevelItemBuff {
 
 					// break block
 					totalXPEarned += BreakBlockFromBuff(player, block, levelItem);
-					totalProcessedBlocks++;
 				}				
 			}			
 		}
@@ -73,12 +71,13 @@ public class MiningAreaBuff extends ALevelItemBuff {
 			long xp = (long) Math.ceil(totalXPEarned * levelItem.getXPRateBuff());
 			TheVeug.AwardWeaponXP(player, xp, levelItem);
 		}
-		System.out.println("Buff Total Awarded XP: " + totalXPEarned + " from " + totalProcessedBlocks + " blocks");
 	}
 
 	private long BreakBlockFromBuff(Player player, Block block, LevelItem levelItem) {
 		Material material = block.getType();
-		if(material == Material.VOID_AIR || material == Material.BEDROCK || material == Material.LAVA || material == Material.WATER || material == Material.CHEST){
+		if(material == Material.VOID_AIR || material == Material.BEDROCK ||
+				material == Material.LAVA || material == Material.WATER ||
+				material == Material.CHEST || material == Material.TORCH){
 			return 0;
 		}
 
@@ -115,5 +114,10 @@ public class MiningAreaBuff extends ALevelItemBuff {
 	@Override
 	public String loreDescription() {
 		return buffName() + " " + level;
+	}
+
+	@Override
+	public int maxLevel() {
+		return 5;
 	}
 }

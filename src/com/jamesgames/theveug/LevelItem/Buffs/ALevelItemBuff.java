@@ -13,6 +13,14 @@ public abstract class ALevelItemBuff {
 		return level;
 	}
 
+	public int maxLevel() {
+		return 0;
+	}
+
+	public boolean canLevelUp() {
+		return maxLevel() == 0 || level < maxLevel();
+	}
+
 	public void onBreak(BlockBreakEvent event) {
 		
 	}

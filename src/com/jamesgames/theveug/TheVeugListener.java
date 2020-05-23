@@ -126,7 +126,5 @@ public class TheVeugListener implements Listener
 		
 		// Use buffs
 		levelItem.onBreak(event);
-		ExperienceOrb spawnEntity = (ExperienceOrb)event.getBlock().getWorld().spawnEntity(event.getBlock().getLocation(), EntityType.EXPERIENCE_ORB);
-		spawnEntity.setExperience(100);
 	}
 }

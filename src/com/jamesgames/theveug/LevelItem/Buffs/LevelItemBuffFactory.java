@@ -42,7 +42,7 @@ public class LevelItemBuffFactory {
 		return null;
 	}
 
-    public ALevelItemBuff CreateBuff(LevelItem levelItem) {
+    public ALevelItemBuff CreateRandomBuff(LevelItem levelItem) {
 		int index = new Random().nextInt(buffTemplates.size());
 		ALevelItemBuff buff = buffTemplates.get(index);
 		try {

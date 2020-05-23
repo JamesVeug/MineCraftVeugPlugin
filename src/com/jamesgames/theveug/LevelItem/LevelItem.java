@@ -3,7 +3,6 @@ package com.jamesgames.theveug.LevelItem;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
@@ -163,22 +162,37 @@ public class LevelItem
 			totalBuffs += buffs.get(i).level();
 		}
 
+		boolean edited = false;
 		while(totalBuffs < expectedBuffs){
-			ALevelItemBuff newBuff = LevelItemBuffFactory.Instance.CreateBuff(this);
+			// Get a random buff
+			ALevelItemBuff newBuff = LevelItemBuffFactory.Instance.CreateRandomBuff(this);
 
-			boolean isAdded = false;
 			for (int i = 0; i < buffs.size(); i++) {
 				ALevelItemBuff currentBuff = buffs.get(i);
-				if(newBuff.buffName().equals(currentBuff.buffName())){
-					currentBuff.levelUp();
-					isAdded = true;
+				boolean buffAlreadyOwned = newBuff.buffName().equals(currentBuff.buffName());
+				if(buffAlreadyOwned){
+					if(currentBuff.canLevelUp()) {
+						// Level our current buff
+						currentBuff.levelUp();
+						totalBuffs++;
+						edited = true;
+					}
+					else{
+						// Skip this buff
+						continue;
+					}
+				}
+				else if(i == buffs.size() - 1){
+					// We don't have this buff. So add it
+					buffs.add(newBuff);
+					edited = true;
+					totalBuffs++;
 				}
 			}
+		}
 
-			if(!isAdded) {
-				buffs.add(newBuff);
-			}
-			totalBuffs++;
+		if(edited){
+			updateItemLore();
 		}
 	}
 }
