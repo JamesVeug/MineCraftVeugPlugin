@@ -10,8 +10,10 @@ public class WeaponXPBuff extends ALevelItemBuff{
 	@Override
 	public ALevelItemBuff CreateFromLore(String lore) {
 		WeaponXPBuff buff = new WeaponXPBuff();
-		String levelString = lore.substring(buff.buffName().length()).trim();
-		buff.level = Integer.parseInt(levelString);
+		if(lore != null && !lore.isEmpty()) {
+			String levelString = lore.substring(buff.buffName().length()).trim();
+			buff.level = Integer.parseInt(levelString);
+		}
 		return buff;
 	}
 

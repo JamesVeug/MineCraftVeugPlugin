@@ -1,21 +1,11 @@
 package com.jamesgames.theveug;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-import javax.script.ScriptException;
-
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.ExperienceOrb;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
@@ -23,7 +13,6 @@ import com.jamesgames.theveug.Config.ImportedData;
 import com.jamesgames.theveug.LevelItem.LevelItem;
 import com.jamesgames.theveug.LevelItem.LevelItemFactory;
 import com.jamesgames.theveug.LevelItem.LevelItemHandler;
-import com.jamesgames.theveug.util.Util;
 
 public class TheVeugListener implements Listener
 {
@@ -73,7 +62,6 @@ public class TheVeugListener implements Listener
 
 		// Make sure the killed thing has data
         plugin.Log("Got Weapon Data");
-		EntityType entityType = deadThing.getType();
 		ImportedData mobData = plugin.Config.GetDataForEntityType(deadThing.getType());
 		if(mobData == null) 
 		{
@@ -126,5 +114,46 @@ public class TheVeugListener implements Listener
 		
 		// Use buffs
 		levelItem.onBreak(event);
+	}
+
+	@EventHandler
+	public void ADamager(EntityDamageByEntityEvent event){
+		Entity victim = event.getEntity();
+		Entity damager = event.getDamager();
+
+		if(!(victim instanceof LivingEntity)) {
+			return;
+		}
+		else if(!(damager instanceof Player)) {
+			return;
+		}
+		else if(event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK || event.getCause() != EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK){
+			return;
+		}
+
+
+		LivingEntity livingVictim = (LivingEntity)victim;
+		boolean isAlive = livingVictim.getHealth() - event.getDamage() > 0;
+		System.out.println("Victim: " + livingVictim);
+		System.out.println("Killer: " + livingVictim.getKiller());
+		System.out.println("getHealth: " + livingVictim.getHealth());
+		System.out.println("damage: " + event.getDamage());
+		System.out.println("getLastDamage: " + livingVictim.getLastDamage());
+		System.out.println("isAlive: " + isAlive);
+		if(!isAlive)
+			return;
+
+
+		Player player = (Player)damager;
+		ItemStack itemInHand = player.getInventory().getItemInMainHand();
+		LevelItem levelItem = LevelItemFactory.Instance.get(itemInHand);
+		if (levelItem == null){
+			return;
+		}
+
+		double baseDamage = event.getDamage();
+		double extraDamage = levelItem.getDamageBuff(event);
+		event.setDamage(baseDamage + extraDamage);
+		System.out.println("Changed damage: " + event.getDamage());
 	}
 }

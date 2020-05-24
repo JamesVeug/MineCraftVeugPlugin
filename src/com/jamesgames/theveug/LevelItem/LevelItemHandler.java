@@ -48,16 +48,21 @@ public class LevelItemHandler
 		// Behavior when leveling
 		if(leveled) 
 		{
+			System.out.println("Leveled!");
+
+			// Change durability
+			item.getItem().setDurability((short) 0);
+
+			// Tell everyone
 			String message = plugin.Config.RandomLevelUpMessage();
 			message = message.replaceAll("-PLAYERNAME-", holder.getDisplayName());
 			message = message.replaceAll("-ITEMNAME-", Util.getMaterialName(item.getItem().getType()));
 			message = message.replaceAll("-LEVEL-", String.valueOf(level));
 			Bukkit.broadcastMessage(message);
-			item.getItem().setDurability((short) 0);
 		}
 		
 
 		item.update(xp, maxXP, level);
-		item.refreshBuffs();
+		item.refreshBuffs(holder);
 	}
 }

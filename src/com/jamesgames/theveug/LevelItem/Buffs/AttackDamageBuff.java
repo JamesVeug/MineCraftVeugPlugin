@@ -1,15 +1,11 @@
 package com.jamesgames.theveug.LevelItem.Buffs;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
-import org.bukkit.Location;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
-import org.bukkit.event.block.BlockBreakEvent;
-
-public class RandomDropBuff extends ALevelItemBuff{
+public class AttackDamageBuff extends ALevelItemBuff{
 
 	@Override
 	public ALevelItemBuff CreateFromLore(String lore) {
-		RandomDropBuff buff = new RandomDropBuff();
+		AttackDamageBuff buff = new AttackDamageBuff();
 		if(lore != null && !lore.isEmpty()) {
 			String levelString = lore.substring(buff.buffName().length()).trim();
 			buff.level = Integer.parseInt(levelString);
@@ -19,15 +15,16 @@ public class RandomDropBuff extends ALevelItemBuff{
 
 	@Override
     public String buffName() {
-		return "Random Drop Buff";
+		return "Attack Damage";
 	}
 
 	@Override
 	public String buffDescription() {
-		return "Increases chance of dropping a random item";
+		return "Increases attack damage";
 	}
-	
-	public double getDropRateBuff() {
-		return 0.05D * level;
+
+	@Override
+	public double getDamageBuff(EntityDamageByEntityEvent event) {
+		return level;
 	}
 }

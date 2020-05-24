@@ -11,8 +11,10 @@ public class PlayerXPDropBuff extends ALevelItemBuff{
 	@Override
 	public ALevelItemBuff CreateFromLore(String lore) {
 		PlayerXPDropBuff buff = new PlayerXPDropBuff();
-		String levelString = lore.substring(buff.buffName().length()).trim();
-		buff.level = Integer.parseInt(levelString);
+		if(lore != null && !lore.isEmpty()) {
+			String levelString = lore.substring(buff.buffName().length()).trim();
+			buff.level = Integer.parseInt(levelString);
+		}
 		return buff;
 	}
 

@@ -3,8 +3,11 @@ package com.jamesgames.theveug.LevelItem;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jamesgames.theveug.util.Util;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -155,44 +158,60 @@ public class LevelItem
 		return change;
 	}
 
-	public void refreshBuffs() {
+
+	public double getDamageBuff(EntityDamageByEntityEvent event) {
+		double damage = 0.0D;
+		for (int i = 0; i < buffs.size(); i++) {
+			damage += buffs.get(i).getDamageBuff(event);
+		}
+		return damage;
+	}
+
+	public void refreshBuffs(Player holder) {
 		int expectedBuffs = level / 5;
 		int totalBuffs = 0;
 		for (int i = 0; i < buffs.size(); i++) {
 			totalBuffs += buffs.get(i).level();
 		}
 
+		// Add new buffs so we have as many as we should have
 		boolean edited = false;
 		while(totalBuffs < expectedBuffs){
+			System.out.println("Refreshing new buffs!");
 			// Get a random buff
 			ALevelItemBuff newBuff = LevelItemBuffFactory.Instance.CreateRandomBuff(this);
+			AddBuff(newBuff, holder);
 
-			for (int i = 0; i < buffs.size(); i++) {
-				ALevelItemBuff currentBuff = buffs.get(i);
-				boolean buffAlreadyOwned = newBuff.buffName().equals(currentBuff.buffName());
-				if(buffAlreadyOwned){
-					if(currentBuff.canLevelUp()) {
-						// Level our current buff
-						currentBuff.levelUp();
-						totalBuffs++;
-						edited = true;
-					}
-					else{
-						// Skip this buff
-						continue;
-					}
-				}
-				else if(i == buffs.size() - 1){
-					// We don't have this buff. So add it
-					buffs.add(newBuff);
-					edited = true;
-					totalBuffs++;
-				}
-			}
+			totalBuffs++;
+			edited = true;
 		}
 
+		// Update lore of we added more buffs
 		if(edited){
 			updateItemLore();
 		}
+	}
+
+	public void AddBuff(ALevelItemBuff newBuff, Player holder){
+		for (int i = 0; i < buffs.size(); i++) {
+			ALevelItemBuff currentBuff = buffs.get(i);
+			boolean buffAlreadyOwned = newBuff.buffName().equals(currentBuff.buffName());
+			if(buffAlreadyOwned && currentBuff.canLevelUp()) {
+				// Level our current buff
+				currentBuff.levelUp();
+				updateItemLore();
+
+				String itemName = Util.getMaterialName(item.getType());
+				holder.sendMessage(ChatColor.BLUE + itemName + " leveled " + currentBuff.buffName() + " to lvl " + currentBuff.level() + ChatColor.RESET);
+				return;
+			}
+		}
+
+		// We don't have this buff. So add it
+		buffs.add(newBuff);
+		updateItemLore();
+
+		String itemName = Util.getMaterialName(item.getType());
+		holder.sendMessage(ChatColor.BLUE + itemName + " gained the " + newBuff.buffName() + ChatColor.RESET);
 	}
 }

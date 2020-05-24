@@ -12,12 +12,13 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 
-public class MiningAreaBuff extends ALevelItemBuff {
+public class TunnelMiningBuff extends ALevelItemBuff {
 
 	@Override
 	public ALevelItemBuff CreateFromLore(String lore) {
-		MiningAreaBuff buff = new MiningAreaBuff();
+		TunnelMiningBuff buff = new TunnelMiningBuff();
 		if(lore != null && !lore.isEmpty()) {
 			String levelString = lore.substring(buff.buffName().length()).trim();
 			buff.level = Integer.parseInt(levelString);
@@ -27,52 +28,81 @@ public class MiningAreaBuff extends ALevelItemBuff {
 
 	@Override
 	public String buffName() {
-		return "Mining Area";
+		return "Tunnel Mining";
 	}
 
 	@Override
 	public String buffDescription() {
-		return "Increases area of mining";
+		return "Mines a straight line from where the player is standing";
 	}
 
 	@Override
 	public void onBreak(BlockBreakEvent event) {
+		System.out.println("Starting Tunnel Mining Buff!");
 		Player player = event.getPlayer();
-		Location location = event.getBlock().getLocation();
+		Block block = event.getBlock();
 		ItemStack itemInHand = player.getInventory().getItemInMainHand();
 		LevelItem levelItem = LevelItemFactory.Instance.get(itemInHand);
 
-		int maxDistance = level;
+		int maxDistance = level + 1;
+		int height = 5;
+		int width = 5;
 		long totalXPEarned = 0;
-		for(int x = -maxDistance; x <= maxDistance; x++) {
-			for(int y = 0; y <= maxDistance * 2; y++) {
-				for(int z = -maxDistance; z <= maxDistance; z++) {
-					if(x == 0 && y == 0 && z == 0) {
-						continue;
-					}
 
-					// Only break blocks in a circular fashion
-					double distance = distance(x, y, z);
-					if(distance > maxDistance){
-						continue;
-					}
 
-					// get new block position
-					int newX = location.getBlockX() + x;
-					int newY = location.getBlockY() + y;
-					int newZ = location.getBlockZ() + z;
-					Block block = player.getWorld().getBlockAt(newX, newY, newZ);
+		Vector blockPosition = block.getLocation().toVector();
+		Vector playerPosition = player.getLocation().toVector();
+		playerPosition.setX(playerPosition.getBlockX());
+		playerPosition.setY(playerPosition.getBlockY() + 1);
+		playerPosition.setZ(playerPosition.getBlockZ());
+
+		//System.out.println("Tunnel Mining: Block " + blockPosition);
+		//System.out.println("Tunnel Mining: Player " + playerPosition);
+
+		// Get max direction we want to move in
+		Vector zDirection = new Vector().copy(player.getLocation().getDirection()).normalize();
+		Vector xDirection = new Vector().copy(zDirection).rotateAroundY(90).normalize();
+		Vector yDirection = new Vector().copy(zDirection).rotateAroundZ(90).normalize();
+
+		Vector startPosition = new Vector().copy(blockPosition);
+		Vector widthVector = new Vector();
+		Vector heightVector = new Vector();
+		Vector depthVector = new Vector();
+		Vector deltaVector = new Vector();
+		for(int x = -width / 2; x <= width / 2; x++){
+			for(int y = -height / 2; y <= height / 2; y++){
+				for(int z = 0; z < maxDistance; z++){
+
+					// Calculate directions
+					widthVector.copy(xDirection).multiply(x);
+					heightVector.copy(yDirection).multiply(y);
+					depthVector.copy(zDirection).multiply(z);
+
+					// Calculate final block position
+					deltaVector.zero();
+					deltaVector.add(startPosition).add(widthVector).add(heightVector).add(depthVector);
+
+					int xPos = (int)Math.round(deltaVector.getX());
+					int yPos = (int)Math.round(deltaVector.getY());
+					int zPos = (int)Math.round(deltaVector.getZ());
+					Block subBlock = player.getWorld().getBlockAt(xPos, yPos, zPos);
+
+					//System.out.println("Tunnel Mining: POS: " + x + ", " + y + ", " + z);
+					/*System.out.println("Tunnel Mining: POS: " + x + ", " + y + ", " + z);
+					System.out.println("Tunnel Mining: SIZ: " + width + ", " + height + ", " + maxDistance);
+					System.out.println("Tunnel Mining: Step " + xPos + ", " + yPos + ", " + zPos);*/
 
 					// break block
-					totalXPEarned += BreakBlockFromBuff(player, block, levelItem);
-				}				
-			}			
+					totalXPEarned += BreakBlockFromBuff(player, subBlock, levelItem);
+				}
+			}
 		}
 
 		if(totalXPEarned > 0) {
 			long xp = (long) Math.ceil(totalXPEarned * levelItem.getXPRateBuff());
 			TheVeug.AwardWeaponXP(player, xp, levelItem);
 		}
+		System.out.println("Ending Tunnel Mining Buff!");
 	}
 
 	private long BreakBlockFromBuff(Player player, Block block, LevelItem levelItem) {

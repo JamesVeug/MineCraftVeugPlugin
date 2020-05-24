@@ -26,6 +26,8 @@ public class LevelItemBuffFactory {
 		buffTemplates.add(new RandomDropBuff());
 		buffTemplates.add(new WeaponXPBuff());
 		buffTemplates.add(new PlayerXPDropBuff());
+		buffTemplates.add(new TunnelMiningBuff());
+		buffTemplates.add(new AttackDamageBuff());
 	}
 	
 	public ALevelItemBuff get(String rawLore) {
@@ -39,6 +41,19 @@ public class LevelItemBuffFactory {
 
 
 		Bukkit.broadcastMessage("[Debug] Could not find Buff with Lore: '" + lore + "'");
+		return null;
+	}
+
+	public ALevelItemBuff getFromId(String id) {
+		for (int i = 0; i < buffTemplates.size(); i++) {
+			ALevelItemBuff buff = buffTemplates.get(i);
+			if(id.equals(buff.ID())){
+				return buff.CreateFromLore("");
+			}
+		}
+
+
+		Bukkit.broadcastMessage("[Debug] Could not find Buff with id: '" + id + "'");
 		return null;
 	}
 

@@ -2,6 +2,7 @@ package com.jamesgames.theveug;
 
 import java.util.ArrayList;
 
+import com.jamesgames.theveug.LevelItem.Buffs.ALevelItemBuff;
 import com.jamesgames.theveug.LevelItem.LevelItem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -19,6 +20,7 @@ import com.jamesgames.theveug.LevelItem.LevelItemFactory;
 import com.jamesgames.theveug.LevelItem.LevelItemHandler;
 import com.jamesgames.theveug.LevelItem.Buffs.LevelItemBuffFactory;
 import com.jamesgames.theveug.util.Util;
+import sun.plugin2.gluegen.runtime.BufferFactory;
 
 public class Main extends JavaPlugin
 {
@@ -149,6 +151,21 @@ public class Main extends JavaPlugin
 				LevelItem levelItem = LevelItemFactory.Instance.get(itemInHand);
 				if(levelItem != null) {
 					LevelItemHandler.Instance.AddExperience(levelItem, levelItem.getMaxXP(), player);
+					return true;
+				}
+
+				return false;
+			}
+			case "add_buff":
+			{
+				Player player = (Player)sender;
+				ItemStack itemInHand = player.getInventory().getItemInMainHand();
+				LevelItem levelItem = LevelItemFactory.Instance.get(itemInHand);
+				if(levelItem != null) {
+					ALevelItemBuff buff = LevelItemBuffFactory.Instance.getFromId(args[0]);
+					if(buff != null) {
+						levelItem.AddBuff(buff, player);
+					}
 					return true;
 				}
 

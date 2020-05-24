@@ -24,3 +24,6 @@ commands:
     level_up_item:
         description: Levels the currently held item up by 1
         usage: /<command>
+    add_buff:
+        description: Adds or levels buff to currently held item
+        usage: /<command> buffName
